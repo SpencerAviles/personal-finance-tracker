@@ -9,5 +9,5 @@ class Transaction(Base):
     description = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
     category = Column(String, default="Uncategorized")
-    account = Column(String, nullable=False)
+    bank_name = Column(String, nullable=False)
     hash = Column(String, unique=True, nullable=False)

@@ -3,7 +3,6 @@ import hashlib
 from core.bank_profiles import BANK_PROFILES
 
 def make_hash(txn_date: str, amount: float, description: str) -> str:
-    # TODO: Create a unique hash from date, amount, and description for deduplication
     hash_input = f"{txn_date}|{amount:.2f}|{description}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
 

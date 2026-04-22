@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from db.database import init_db
-from routers import transactions, upload, summary
+from routers import transactions, upload, summary, delete
 import os
 
 app = FastAPI(title="Personal Finance Tracker")
@@ -23,6 +23,7 @@ def on_startup():
 app.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
 app.include_router(upload.router, prefix="/upload", tags=["upload"])
 app.include_router(summary.router, prefix="/summary", tags=["summary"])
+app.include_router(delete.router, prefix="/delete", tags=["delete"])
 
 # Serve the React frontend in production
 # Run "npm run build" in the frontend folder first to generate the dist folder

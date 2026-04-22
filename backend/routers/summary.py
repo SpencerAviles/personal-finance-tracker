@@ -22,7 +22,7 @@ def spending_by_category(
 
     totals = category_query.group_by(Transaction.category).all()
 
-    return [{"category": r[0], "total": r[1]} for r in totals]
+    return [{"category": r[0], "total": round(r[1], 2)} for r in totals]
 
 @router.get("/monthly")
 def monthly_totals(
@@ -36,4 +36,4 @@ def monthly_totals(
 
     monthly = monthly_query.group_by(extract('month', Transaction.date), extract('year', Transaction.date)).order_by(extract('month', Transaction.date), extract('year', Transaction.date)).all()
 
-    return [{"month": m[0], "year": m[1], "total": m[2]} for m in monthly]
+    return [{"month": m[0], "year": m[1], "total": round(m[2], 2)} for m in monthly]

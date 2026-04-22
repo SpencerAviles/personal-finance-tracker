@@ -14,7 +14,7 @@ async def upload_csv(
     bank_name: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    ext = Path(file.filename).suffix
+    ext = Path(file.filename).suffix 
     if ext != '.csv':
         raise HTTPException(status_code=400, detail="Not a CSV file")
 

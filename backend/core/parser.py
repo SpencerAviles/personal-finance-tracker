@@ -2,8 +2,8 @@ import pandas as pd
 import hashlib
 from core.bank_profiles import BANK_PROFILES
 
-def make_hash(txn_date: str, amount: float, description: str) -> str:
-    hash_input = f"{txn_date}|{amount:.2f}|{description}"
+def make_hash(txn_date: str, amount: float, description: str, row_index: int) -> str:
+    hash_input = f"{txn_date}|{amount:.2f}|{description}|{row_index}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
 
 def parse_csv(file, bank_name: str) -> list[dict]:
@@ -23,9 +23,12 @@ def parse_csv(file, bank_name: str) -> list[dict]:
     if not profile["debit_is_negative"]:
         df['amount'] *= -1
 
-    df['date'] = pd.to_datetime(df['date'], format = profile['date_format'])
+    df = df[~df['date'].astype(str).str.startswith('PENDING')]
+    df['date'] = pd.to_datetime(df['date'], format=profile['date_format'])
 
-    df['hash'] = df.apply(lambda row: make_hash(row['date'], row['amount'], row['description']), axis=1)
+    df['_occurrence'] = df.groupby(['date', 'amount', 'description']).cumcount()
+    df['hash'] = df.apply(lambda row: make_hash(row['date'], row['amount'], row['description'], row['_occurrence']), axis=1)
+    df = df.drop(columns=['_occurrence'])
 
     df['bank_name'] = bank_name
 

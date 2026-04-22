@@ -5,6 +5,14 @@ from db.models import Transaction
 from core.parser import parse_csv
 from core.categorizer import categorize
 from pathlib import Path
+import json
+
+try:
+    with open(Path(__file__).parent.parent / "config.json") as f:
+        config = json.load(f)
+except FileNotFoundError:
+    print("WARNING: config.json not found. No transfer patterns applied")
+    config= {}
 
 router = APIRouter()
 
@@ -14,12 +22,11 @@ async def upload_csv(
     bank_name: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    ext = Path(file.filename).suffix
+    ext = Path(file.filename).suffix 
     if ext != '.csv':
         raise HTTPException(status_code=400, detail="Not a CSV file")
 
     transactions = parse_csv(file.file, bank_name)
-
     inserted = 0
     skipped = 0
     for txn in transactions:
@@ -29,8 +36,13 @@ async def upload_csv(
             skipped += 1
             continue
         else:
+            patterns = config.get("transfer_descriptions", {}).get(bank_name, [])
+            if any(txn['description'].startswith(pattern) for pattern in patterns):
+                txn['category'] = "Transfer"
+            
             if not txn.get('category'):
                 txn['category'] = categorize(txn['description'])
+            
             new_txn = Transaction(**txn)
             db.add(new_txn)
             inserted += 1

@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, Query
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import extract
 from db.database import get_db
 from db.models import Transaction
 from pydantic import BaseModel
@@ -14,21 +16,43 @@ class TransactionUpdate(BaseModel):
 def get_transactions(
     month: Optional[int] = Query(None),
     year: Optional[int] = Query(None),
-    account: Optional[str] = Query(None),
+    bank_name: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    # TODO: Query all transactions from the database
-    # TODO: Filter by month, year, and/or account if provided
-    # TODO: Return results ordered by date descending
-    pass
+    get_query = db.query(Transaction)
 
-@router.patch("/{transaction_id}")
+    if month:
+        get_query = get_query.filter(extract('month', Transaction.date) == month)
+    
+    if year: 
+        get_query = get_query.filter(extract('year', Transaction.date) == year)
+    
+    if bank_name:
+        get_query = get_query.filter(Transaction.bank_name == bank_name)
+
+    if category:
+        get_query = get_query.filter(Transaction.category == category)
+
+    results = get_query.order_by(Transaction.date.desc()).all()
+    
+    return results
+
+@router.patch("/update/{transaction_id}")
 def update_transaction(
     transaction_id: int,
     body: TransactionUpdate,
     db: Session = Depends(get_db),
 ):
-    # TODO: Look up the transaction by ID, return 404 if not found
-    # TODO: Update the category if provided
-    # TODO: Commit and return the updated transaction
-    pass
+    update_query = db.query(Transaction)
+
+    trans_id_query = update_query.filter(Transaction.id == transaction_id).first()
+    if not trans_id_query:
+        raise HTTPException(status_code=404, detail="ID Not Found")
+    
+    if body.category is not None:
+        trans_id_query.category = body.category
+
+    db.commit()
+    db.refresh(trans_id_query)
+    return trans_id_query

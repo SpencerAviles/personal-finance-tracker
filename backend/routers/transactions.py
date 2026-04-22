@@ -17,6 +17,7 @@ def get_transactions(
     month: Optional[int] = Query(None),
     year: Optional[int] = Query(None),
     bank_name: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     get_query = db.query(Transaction)
@@ -29,6 +30,9 @@ def get_transactions(
     
     if bank_name:
         get_query = get_query.filter(Transaction.bank_name == bank_name)
+
+    if category:
+        get_query = get_query.filter(Transaction.category == category)
 
     results = get_query.order_by(Transaction.date.desc()).all()
     

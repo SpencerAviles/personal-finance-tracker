@@ -13,7 +13,7 @@ def spending_by_category(
     year: Optional[int] = Query(None),
     db: Session = Depends(get_db),
 ):
-    category_query = db.query(Transaction.category, func.sum(Transaction.amount))
+    category_query = db.query(Transaction.category, func.sum(Transaction.amount)).filter(Transaction.category != "Transfer")
 
     if month:
         category_query = category_query.filter(extract('month', Transaction.date) == month)
@@ -29,7 +29,7 @@ def monthly_totals(
     year: Optional[int] = Query(None),
     db: Session = Depends(get_db),
 ):
-    monthly_query = db.query(extract('month', Transaction.date), extract('year', Transaction.date), func.sum(Transaction.amount))
+    monthly_query = db.query(extract('month', Transaction.date), extract('year', Transaction.date), func.sum(Transaction.amount)).filter(Transaction.category != "Transfer")
 
     if year:
         monthly_query = monthly_query.filter(extract('year', Transaction.date) == year)

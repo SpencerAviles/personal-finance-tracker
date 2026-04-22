@@ -7,8 +7,12 @@ from core.categorizer import categorize
 from pathlib import Path
 import json
 
-with open(Path(__file__).parent.parent / "config.json") as f:
-    config = json.load(f)
+try:
+    with open(Path(__file__).parent.parent / "config.json") as f:
+        config = json.load(f)
+except FileNotFoundError:
+    print("WARNING: config.json not found. No transfer patterns applied")
+    config= {}
 
 router = APIRouter()
 

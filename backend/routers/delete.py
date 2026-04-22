@@ -12,7 +12,6 @@ def delete_transaction(
     db: Session = Depends(get_db),
 ):
     delete_query = db.query(Transaction).filter(Transaction.hash == hash).first()
-    print(hash)
 
     if not delete_query:
         raise HTTPException(status_code=404, detail="Hash Not Found/Does Not Exist")

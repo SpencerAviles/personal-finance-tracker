@@ -6,7 +6,8 @@ export interface Transaction {
   description: string;
   amount: number;
   category: string;
-  account: string;
+  bank_name: string;
+  hash: string;
 }
 
 export interface CategorySummary {
@@ -23,46 +24,87 @@ export interface MonthlyTotal {
 export async function getTransactions(params?: {
   month?: number;
   year?: number;
-  account?: string;
+  bank_name?: string;
+  category?: string;
 }): Promise<Transaction[]> {
-  // TODO: GET /transactions with optional query params
-  // TODO: Return the response data
-  return [];
+  try {
+    const response = await api.get("/transactions", { params });
+    return response.data;
+  }
+  catch (error) {
+    console.error("Error fetching transactions:", error);
+    throw error;
+  }
 }
 
 export async function updateTransactionCategory(
   id: number,
   category: string
 ): Promise<Transaction> {
-  // TODO: PATCH /transactions/:id with { category }
-  // TODO: Return the updated transaction
-  return {} as Transaction;
+  try {
+    const response = await api.patch(`/transactions/${id}`, { category });
+    return response.data;
+  }
+  catch (error) {
+    console.error(`Error updating transaction ${id}:`, error);
+    throw error;
+  }
 }
 
 export async function getSpendingByCategory(params?: {
   month?: number;
   year?: number;
 }): Promise<CategorySummary[]> {
-  // TODO: GET /summary/by-category with optional query params
-  // TODO: Return the response data
-  return [];
+  try {
+    const response = await api.get("/summary/by-category", { params });
+    return response.data;
+  }
+  catch (error) {
+    console.error("Error fetching category summary:", error);
+    throw error;
+  }
 }
 
 export async function getMonthlyTotals(params?: {
   year?: number;
 }): Promise<MonthlyTotal[]> {
-  // TODO: GET /summary/monthly with optional query params
-  // TODO: Return the response data
-  return [];
+  try {
+    const response = await api.get("/summary/monthly", { params });
+    return response.data;
+  }
+  catch (error) {
+    console.error("Error fetching monthly totals:", error);
+    throw error;
+  }
 }
 
 export async function uploadCSV(
   file: File,
   bank: string,
-  accountName: string
+  bankName: string
 ): Promise<{ inserted: number; duplicates_skipped: number }> {
-  // TODO: Build a FormData object with file, bank, and account_name
-  // TODO: POST /upload with the FormData
-  // TODO: Return the response data
-  return { inserted: 0, duplicates_skipped: 0 };
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("bank", bank);
+  formData.append("account_name", bankName);
+  try {
+    const response = await api.post("/upload", formData);
+    return response.data;
+  }
+  catch (error) {
+    console.error("Error uploading CSV:", error);
+    throw error;
+  }
+}
+
+export async function deleteTransaction(
+  hash: string
+): Promise<void> {
+  try {
+    await api.delete(`/transactions/${hash}`);
+  }
+  catch (error) {
+    console.error(`Error deleting transaction with hash ${hash}:`, error);
+    throw error;
+  }
 }

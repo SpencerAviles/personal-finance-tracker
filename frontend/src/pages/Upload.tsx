@@ -18,8 +18,17 @@ export default function Upload() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: Validate that file, bank, and accountName are all set
-    // TODO: Call uploadCSV and store the result in state
+    if (!file || !bank || !accountName) {
+      alert("Please fill in all fields.");
+      return;
+    }
+    try {
+      const uploadResult = await uploadCSV(file, bank, accountName);
+      setResult(uploadResult);
+    }
+    catch (error) {
+      alert("Error uploading CSV. Please try again.");
+    }
     // TODO: Show a success message with how many transactions were inserted
   }
 
